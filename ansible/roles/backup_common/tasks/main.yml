@@ -1,0 +1,6 @@
+---
+- name: install rsnapshot
+  apt: name=rsnapshot state=present
+  become: true
+- name: 
+  
