@@ -1,0 +1,21 @@
+---
+
+- name: Create an EC2 instance
+  ec2:
+    region: "{{ region }}"
+    instance_type: "{{ instance_type }}"
+    zone: "{{ region }}{{ availability_zone }}"
+    wait: yes
+    image: "{{ image }}"
+    key_name: "ansible-{{ region }}"
+    instance_tags:
+      ansible: True
+      role: "{{ role }}"
+    count_tag:
+      role: "{{ role }}"
+    exact_count: "{{ count }}"
+  register: ec2
+
+- name: configure ssh
+  include: ec2-configure-ssh.yml
+  with_items: "{{ ec2.instances }}"
