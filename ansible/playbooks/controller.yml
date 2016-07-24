@@ -1,0 +1,34 @@
+- hosts: xps13
+  connection: local
+  tasks:
+  - name: add PPAs
+    apt_repository:
+      repo: "ppa:ansible/ansible"
+      state: present
+    become: true
+  - name: install packages
+    apt:
+      name:
+        - nginx
+        - apg
+        - ansible
+      state: latest
+      update_cache: true
+    become: true
+  - name: ensure services are running and enabled on boot
+    become: true
+    service:
+      name: "{{ item }}"
+      enabled: yes
+      state: started
+    with_items:
+      - nginx
+      - mysql
+  - name: ensure srv can be written to by michael
+    user: name=michael groups=root append=yes
+    
+  - name: ensure that local infrastructure git repo is present in /srv/
+    git:
+      repo: git@github.com:michaelmcandrew/infra.git
+      dest: /srv/infra
+    become: true
