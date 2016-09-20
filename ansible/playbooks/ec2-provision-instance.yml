@@ -1,0 +1,78 @@
+---
+
+- include: ec2-create-vpc.yml
+- name: create an EC2 key
+  ec2_key:
+    name: "ansible3-{{ region }}"
+    region: "{{ region }}"
+  register: ec2_key
+- name: save private key
+  copy: content="{{ ec2_key.key.private_key }}" dest="~/aws-ansible-{{ region }}.pem" mode=0600
+  when: ec2_key.changed
+- name: look up latest compatible instance
+  shell: curl -s https://cloud-images.ubuntu.com/query/xenial/server/released.current.txt | awk -F '\t' '/ebs-ssd/ && /hvm/ && /{{ region }}/ {print $8}'
+  register: ami 
+- name: get vpc subnet facts
+  ec2_vpc_subnet_facts:
+    filters:
+      "tag:Name": "{{ az }}-{{ access }}"
+    region: "{{ region }}"
+  register: vpc_subnet
+- name: create ec2 instance
+  ec2:
+    key_name: "ansible-{{ region }}"
+    region: "{{ region }}"
+    instance_type: "{{ instance_type }}"
+    volumes: "{{ volumes|default([{'device_name': '/dev/sda1', 'volume_size': 8, 'volume_type': 'gp2'}]) }}"
+    image: "{{ ami.stdout }}"
+    groups: "{{ security_groups }}"
+    wait: yes
+    instance_tags:
+      role: "{{ role }}"
+      ansible: "yes"
+    private_ip: "{{ private_ip }}"
+    vpc_subnet_id: "{{ vpc_subnet.subnets.0.id }}"
+    assign_public_ip: "{% if access == 'public' %}yes{% else %}no{% endif %}"
+  register: ec2
+  failed_when: "ec2.failed is defined and ec2.failed == True and 'InvalidIPAddress.InUse' not in ec2.msg"
+- name: find instance
+  ec2_remote_facts:
+    region: "{{ region }}"
+    filters:
+      private-ip-address: "{{ private_ip }}"
+      instance-state-name: running
+  register: instance
+- block:
+  - name: create a private DNS record
+    route53:
+      command: create
+      zone: "{{ private_domain }}"
+      private_zone: True
+      vpc_id: "{{ vpc.vpc_id }}"
+      record: "{{ host }}.{{ private_domain }}"
+      type: A
+      ttl: 60
+      value: "{{ private_ip }}"
+      overwrite: yes
+      wait: yes
+  - name: create a public DNS record
+    route53:
+      command: create
+      zone: "{{ public_domain }}"
+      record: "{{ host }}.{{ public_domain }}"
+      type: CNAME
+      ttl: 60
+      value: "{{ instance.instances.0.public_dns_name }}."
+      overwrite: yes
+      wait: yes
+    when: access == 'public'
+  when: instance.instances.0.id is defined
+
+- include: ec2-configure-ssh.yml
+  with_items: "{{ ec2.instances|default({}) }}" # I think we need a default here, else it will complain
+  when: ec2.changed
+  
+- name: install python 2 (later versions of ubuntu ship with python 3)
+  shell: ssh {{ host }}.{{ private_domain }} sudo apt -y install python
+
+- meta: refresh_inventory

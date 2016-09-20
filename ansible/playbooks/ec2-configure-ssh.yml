@@ -1,16 +1,31 @@
 ---
-- name: wait for SSH to come up on instance {{ item.id }} ({{ item.public_ip }})
-  wait_for: port=22 host={{ item.public_ip }} search_regex=OpenSSH
-
-- name: look up host key in console output
+- name: get host key in EC2 console output
   shell: aws ec2 get-console-output --instance-id {{ item.id }} --output text|sed -n 's/ecdsa-sha2-nistp256 \([^ ]*\).*/\1/p'
   register: host_key
   until: host_key.stdout|length
   delay: 30
   retries: 30
-
-- name: add host key to known_hosts
+- name: add private ip to known_hosts
+  known_hosts:
+    name: "{{ item.private_ip }}"
+    key: "{{ item.private_ip }} ecdsa-sha2-nistp256 {{ host_key.stdout }}"
+- name: add private domain name to known_hosts
+  known_hosts:
+    name: "{{ host }}.{{ private_domain }}"
+    key: "{{ host }}.{{ private_domain }} ecdsa-sha2-nistp256 {{ host_key.stdout }}"
+- name: add public ip to known_hosts
   known_hosts:
     name: "{{ item.public_ip }}"
     key: "{{ item.public_ip }} ecdsa-sha2-nistp256 {{ host_key.stdout }}"
-    state: present
+  when: access == 'public'
+- name: add public domain name to known_hosts
+  known_hosts:
+    name: "{{ host }}.{{ public_domain }}"
+    key: "{{ host }}.{{ public_domain }} ecdsa-sha2-nistp256 {{ host_key.stdout }}"
+  when: access == 'public'
+- name: wait for ssh
+  wait_for:
+    host: "{{ host }}.{{ private_domain }}"
+    port: 22
+    search_regex: OpenSSH
+  when: host is defined and host == 'bastion' # we can't do this for other hosts as wait_for is not aware that we'd need to use the bastion

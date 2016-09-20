@@ -1,0 +1,94 @@
+---
+- name: create VPC (subnets)
+  ec2_vpc:
+    resource_tags: { "Name":"3sd" }
+    state: present
+    region: "{{ region }}"
+    cidr_block: 10.0.0.0/16
+    internet_gateway: yes
+    subnets:
+    - resource_tags: { "Name":"a-private" }
+      cidr: 10.0.0.0/19 #10.0.[0-31].*
+      az: "{{ region}}a"
+    - resource_tags: { "Name":"a-public" }
+      cidr: 10.0.32.0/20 #10.0.[32-47].*
+      az: "{{ region}}a"
+    - resource_tags: { "Name":"b-private" }
+      cidr: 10.0.64.0/19 #10.0.[64-95].*
+      az: "{{ region}}b"
+    - resource_tags: { "Name":"b-public" }
+      cidr: 10.0.96.0/20 #10.0.[96-111].*
+      az: "{{ region}}b"
+      # - resource_tags: { "Name":"c-private" }
+      #   cidr: 10.0.128.0/19 #10.0.[128-159].*
+      #   az: "{{ region}}c"
+      # - resource_tags: { "Name":"c-public" }
+      #   cidr: 10.0.160.0/20 #10.0.[160-175].*
+      #   az: "{{ region}}c"
+  register: vpc
+  
+- name: create public hosted DNS zone
+  route53_zone:
+    zone: "{{ public_domain }}"
+
+- name: create private hosted DNS zone
+  route53_zone:
+    zone: "{{ private_domain }}"
+    vpc_id: "{{ vpc.vpc_id }}"
+    vpc_region: "{{ region }}"
+
+- name: gather a-public subnet facts
+  ec2_vpc_subnet_facts:
+    region: "{{ region }}"
+    filters:
+      "tag:Name": a-public
+  register: subnet
+  
+- name: Create NAT gateway
+  ec2_vpc_nat_gateway:
+    state: present
+    subnet_id: "{{ subnet.subnets.0.id }}"
+    wait: yes
+    region: "{{ region }}"
+    if_exist_do_not_create: true
+  register: nat_gateway
+
+- name: create route tables for public subnet
+  ec2_vpc_route_table:
+    vpc_id: "{{ vpc.vpc_id }}"
+    region: "{{ region }}"
+    lookup: tag
+    tags:
+      Name: public
+    subnets:
+    - 10.0.32.0/20
+    - 10.0.96.0/20
+    routes:
+    - dest: 0.0.0.0/0
+      gateway_id: igw
+
+- name: route table for private subnet with vpn access
+  ec2_vpc_route_table:
+    vpc_id: "{{ vpc.vpc_id }}"
+    region: "{{ region }}"
+    lookup: tag
+    tags:
+      Name: private
+    subnets:
+    - 10.0.0.0/19
+    - 10.0.64.0/19
+    routes:
+    - dest: 0.0.0.0/0
+      gateway_id: "{{ nat_gateway.nat_gateway_id }}"
+# 
+- name: configure bastion security group
+  ec2_group:
+    region: "{{ region }}"
+    vpc_id: "{{ vpc.vpc_id }}"
+    name: bastion
+    description: allow access to bastion
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: "{{ home_public_ip }}/32"
