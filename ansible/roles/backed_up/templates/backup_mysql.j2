@@ -1,0 +1,14 @@
+mysql -BNe "show databases" | while read database ; do
+case $database in
+    information_schema | performance_schema )
+        # skip the above databases
+        ;;
+    * )
+        # and backup the others
+        
+        echo "- $database"
+        mysqldump --skip-comments $database > {{ backup_snap }}dbs/$database.sql
+        gzip -fn --rsyncable {{ backup_snap }}dbs/$database.sql
+        ;;
+esac
+done

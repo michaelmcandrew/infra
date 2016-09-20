@@ -1,0 +1,56 @@
+---
+- name: snaphot backup directory exists
+  file: path={{ backup_snap }} state=directory
+  become: yes
+- name: snaphot backup directory for database dumps exists
+  file: path={{ backup_snap }}/dbs state=directory
+  become: yes
+  when: backup_mysql
+- name: script to create mysql dumps in {{ backup_snap }}files
+  template: src=../templates/backup_snap.j2 dest=/usr/local/bin/backup_snap mode=a+x
+  become: true
+- name: script to create mysql dumps in {{ backup_snap }}dbs
+  template: src=../templates/backup_mysql.j2 dest=/usr/local/bin/backup_mysql mode=a+x
+  become: true
+  when: backup_mysql
+- name: cron to dump the mysql databases
+  cron:
+    name: "backup_mysql"
+    cron_file: backup
+    user: root
+    minute: 40
+    hour: 3,7,11,15,20,23
+    job: "/usr/local/bin/backup_mysql"
+  when: backup_mysql
+  become: true
+- name: cron to create the local snapshot
+  cron:
+    name: "backup_snap"
+    cron_file: backup
+    user: root
+    minute: 0
+    hour: 0,4,8,12,16,20
+    job: "/usr/local/bin/backup_snap"
+  become: true
+- name: get public key from backup master
+  local_action: command rsync --rsync-path "sudo rsync" backup-master.{{ private_domain }}:/root/.ssh/id_rsa.pub /tmp/backup-master-public-key.pub
+- name: add backup-master public key to this machine
+  authorized_key: user=backup key="{{ lookup('file', '/tmp/backup-master-public-key.pub') }}"
+  become: true
+- name: remove local copy of public key
+  local_action: file path=/tmp/backup-master-public-key.pub state=absent
+- name: get ssh key for the backed up machine
+  fetch:
+    src: /etc/ssh/ssh_host_ecdsa_key.pub
+    dest: /tmp/backed-up-server-ecdsa-key.pub
+    flat: true
+- name: copy the server's public key to known hosts)
+  local_action: raw echo {{ ssh_host|default(ansible_fqdn) }} `cat /tmp/backed-up-server-ecdsa-key.pub` | ssh backup-master.{{ private_domain }} "cat > /tmp/backed-up-host;sudo ssh-keygen -F {{ ansible_fqdn }} || echo 'cat /tmp/backed-up-host >> /root/.ssh/known_hosts' | sudo bash; rm /tmp/backed-up-host"
+- name: remove the local copy of the server's public key 
+  local_action: file path=/tmp/backed-up-server-ecdsa-key.pub state=absent
+- debug: var=via_ssh_tunnel
+- name: create autossh.service for systemd
+  template: src=../templates/autossh.service.j2 dest=/etc/systemd/system/autossh.service
+  when: via_ssh_tunnel
+  tags: ssh_tunnel
+  become: true

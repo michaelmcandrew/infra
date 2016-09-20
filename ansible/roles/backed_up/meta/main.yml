@@ -1,0 +1,3 @@
+---
+dependencies:
+- { role: user, users: [{name: backup, sudo: true}] }
