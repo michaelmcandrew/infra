@@ -1,5 +1,0 @@
----
-image: ami-4bd03b24  # eu-central-1 trusty 14.04 amd64 hvm-ssd (see https://cloud-images.ubuntu.com/locator/)
-region: eu-central-1
-availability_zone: a
-count: 1

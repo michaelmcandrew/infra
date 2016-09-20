@@ -1,0 +1,9 @@
+---
+backup_pit: /srv/backup/pit/
+backup_snap: /srv/backup/snap/
+region: eu-central-1
+availability_zone: a
+home_public_ip: 217.155.40.243
+private_domain: 3sd.ec2
+public_domain: thirdsectordesign.org
+# curl -s https://cloud-images.ubuntu.com/query/trusty/server/released.current.txt | awk 'BEGIN { FS = "\t" } $5=="ebs-ssd" && $7=="eu-west-1" && $11=="hvm" {print $8}'
