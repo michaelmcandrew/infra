@@ -1,0 +1,133 @@
+---
+- name: create a new development civicrm site
+  hosts: localhost
+  connection: local
+  vars:
+    www_root: /var/www/
+  vars_prompt:
+  - name: name
+    prompt: "Short name for dev site"
+    private: no
+  tasks:
+  - name: set site root
+    set_fact:
+      site_root: "{{ www_root }}{{ name }}"
+  - name: check whether name already exists
+    stat:
+      path: "{{ site_root }}"
+    register: site_dir_stat
+  - fail:
+      msg: "{{ name }} already exists"
+    when: site_dir_stat.stat.exists
+  - name: download drupal 7.x
+    command: drush dl drupal-7 --destination=/var/www/ --drupal-project-rename={{ name }} -y
+  - name: check whether the any databases with the site prefix exist
+    shell: mysql -B --disable-column-names -e "SHOW DATABASES" | grep ^{{ name }}_
+    register: db_stat
+    failed_when: db_stat.rc==0
+  - name: generate password for mysql
+    shell: apg -m 20 -M NCL -a 1 -n 1
+    register: mysql_password
+  - name: generate password for logging in
+    shell: apg -m 20 -M NCL -a 1 -n 1
+    register: user_password
+  - debug: var=user_password.stdout
+  - name: create mysql user
+    mysql_user:
+      name: "{{ name }}"
+      password: "{{ mysql_password.stdout }}"
+      priv: "{{ name }}\\_%.*:ALL"
+  - name: create mysql databases
+    mysql_db:
+      name: "{{ item }}"
+    with_items:
+    - "{{ name }}_civicrm"
+    - "{{ name }}_drupal"
+  - name: install drupal
+    shell: |
+      drush site-install \
+      --site-name={{ name }} \
+      --site-mail={{ name }}@sites.3sd.io \
+      --db-url=mysql://{{ name }}:{{ mysql_password.stdout }}@localhost/{{ name }}_drupal \
+      --account-mail=michaelmcandrew@thirdsectordesign.org \
+      --account-name="Michael McAndrew" \
+      --account-pass={{ user_password.stdout }} \
+      -y
+    args:
+      chdir: "{{ site_root }}"
+  - name: create nginx conf
+    template:
+      src: templates/nginx-civi-drupal.j2
+      dest: /etc/nginx/sites-available/{{ name }}
+  - name: link from sites-available to sites-enabled
+    file:
+      src: /etc/nginx/sites-available/{{ name }}
+      dest: /etc/nginx/sites-enabled/{{ name }}
+      state: link
+  - name: ensure we have a hosts file for this site
+    lineinfile:
+      dest: /etc/hosts
+      line: 127.0.0.1 {{ name }}
+    become: true
+  - name: restart nginx
+    service:
+      name: nginx
+      state: restarted
+    become: true
+  - name: initialise scout cache
+    file:
+      name: /srv/scout/cache/downloads
+      state: directory
+      owner: "{{ ansible_user_id }}"
+      group: "{{ ansible_user_id }}"
+    become: true
+  - name: download civicrm
+    uri:
+      url: https://latest.civicrm.org/stable.php
+      return_content: yes
+    register: latest_civicrm
+  - debug: var=ansible_user_id
+  - name: download latest civicrm
+    get_url:
+      url: https://download.civicrm.org/civicrm-{{ latest_civicrm.content }}-{{ item }}.tar.gz
+      dest: /srv/scout/cache/downloads/civicrm-{{ latest_civicrm.content }}-{{ item }}.tar.gz
+    with_items:
+    - drupal
+    - l10n
+  - name: untar civicrm files
+    unarchive:
+      src: /srv/scout/cache/downloads/civicrm-{{ latest_civicrm.content }}-{{ item }}.tar.gz
+      dest: "{{ site_root }}/sites/all/modules"
+    with_items:
+    - drupal
+    - l10n
+  - name: touch a civicrm.settings.php file for the installer
+    copy:
+      content: ""
+      dest: "{{ site_root }}/sites/default/civicrm.settings.php"
+      owner: "{{ ansible_user_id }}"
+      group: "{{ ansible_user_id }}"
+    become: true
+  - name: install civicrm
+    shell: |
+      drush civicrm-install \
+      --include="{{ site_root }}" \
+      --dbname={{ name }}_civicrm \
+      --dbpass={{ mysql_password.stdout }} \
+      --dbhost=localhost:3306 \
+      --dbuser={{ name }} \
+      --site_url={{ name }} \
+    args:
+      chdir: "{{ site_root }}"
+  - name: set ownership to {{ ansible_user_id }}:www-data
+    shell: chown -R {{ ansible_user_id }}:www-data {{ site_root }}
+
+  - name: "{{ site_root }} directory permissions (u=rwx,g=rx,o=)"
+    shell: find {{ site_root }} -type d -exec chmod u=rwx,g=rx,o= '{}' \;
+  - name: "{{ site_root }} file permissions (u=rw,g=r,o=)"
+    shell: find {{ site_root }} -type f -exec chmod u=rw,g=r,o= '{}' \;
+
+  - name: "{{ site_root }}/sites/*/files directory permissions (ug=rwx,o=)"
+    shell: find {{ site_root }}/sites/*/files -type d -exec chmod ug=rwx,o= '{}' \;
+  - name: "{{ site_root }}/sites/*/files file permissions (ug=rw,o=)"
+    shell: find {{ site_root }}/sites/*/files -type f -exec chmod ug=rw,o= '{}' \;
