@@ -1,0 +1,33 @@
+---
+backup_pits:
+- name: hourly
+  cron:
+    minute: 0
+    hour: '0,4,8,12,16,20'
+  until: 2days
+- name: daily
+  cron:
+    user: root
+    minute: 0
+    hour: 2
+  until: 2weeks
+- name: weekly
+  cron:
+    user: root
+    minute: 0
+    hour: 6
+    weekday: 0
+  until: 8weeks
+- name: monthly
+  cron:
+    minute: 0
+    hour: 10
+    day: 1 
+  until: 2years
+- name: yearly
+  cron:
+    minute: 0
+    hour: 14
+    day: 1
+    month: 1
+  until: 50years

@@ -1,0 +1,36 @@
+---
+- name: create PIT backup root directory
+  file: path=/srv/backup/pit state=directory
+  become: true
+- name: create host snapshot backup root directory
+  file: path=/srv/backup/snap/hosts state=directory
+  become: true
+- name: create backup scripts for different PIT backups
+  template: src=../templates/backup_pit.j2 dest=/usr/local/bin/backup_pit_{{item.name}} mode=a+x
+  become: true
+  with_items: "{{backup_pits}}"
+- name: create cron jobs to run PIT backups
+  cron:
+    name: "{{item.name}}"
+    cron_file: backup
+    user: root
+    minute: "{{item.cron.minute|default('*')}}"
+    hour: "{{item.cron.hour|default('*')}}"
+    day: "{{item.cron.day|default('*')}}"
+    weekday: "{{item.cron.weekday|default('*')}}"
+    month: "{{item.cron.month|default('*')}}"
+    job: "/usr/local/bin/backup_pit_{{item.name}}"
+  become: true
+  with_items: "{{backup_pits}}"
+- name: include backed_up_hosts.yml
+  include_vars:
+    file: ../vars/backed_up_hosts.yml
+- name: rsync from each backed up host to the snapshot directory
+  template: src=../templates/rsync_snap.j2 dest=/usr/local/bin/backup_rsync_snaps mode=a+x
+  become: true
+- name: generate key for root
+  user:
+    name: root
+    generate_ssh_key: true
+  become: true
+    

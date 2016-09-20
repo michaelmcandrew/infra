@@ -1,18 +1,30 @@
 ---
 - name: provision master backup server
   hosts: localhost
+  gather_facts: False
   connection: local
   tasks:
-  - include: ec2-provision.yml
+  - include: ec2-provision-instance.yml
     vars:
-      count: 1
-      instance_type: t2.nano
-      availability_zone: a
       role: backup_master
-  - meta: refresh_inventory
-
+      host: backup-master
+      private_ip: 10.0.5.1
+      access: private
+      az: a
+      instance_type: t2.nano
+      volumes:
+      - device_name: /dev/sda1
+        volume_size: 8
+        volume_type: gp2
+      - device_name: /dev/sdf
+        volume_size: 500
+        volume_type: sc1
+      security_groups:
+      - default
+    tags: ec2
+      
 - name: configure master backup server
   hosts: tag_role_backup_master
   roles:
-    - backup_master
-    - backup_common
+  - { role: common, hostname: backup-master }
+  - backup_master
