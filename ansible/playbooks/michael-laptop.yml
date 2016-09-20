@@ -1,0 +1,26 @@
+---
+- name: configure my laptop
+  hosts: michael_laptop
+  connection: local
+  vars:
+    vpn_client:
+      name: xps13
+    backup_mysql: true
+    backup_paths:
+    - source: /etc
+    - source: /var
+    - source: /srv
+      excludes:
+      - backup
+    - source: /home/*
+      excludes:
+      - ".thunderbird"
+      - ".cache"
+      - "Videos"
+    - source: /root
+    - source: /usr/local
+  roles:
+  - controller
+  - { role: backed_up, via_ssh_tunnel: true, ssh_port: 30121, ssh_user: michael }
+  - ssh_tunnel
+  - dev

@@ -1,0 +1,31 @@
+---
+# - name: install packages
+#   apt:
+#     name:
+#       - apg
+#     state: latest
+#     update_cache: true
+#     cache_valid_time: 21600 # six hours
+#   become: true
+- name: create directory for infrastructure repo (as root)
+  file: path=/srv/infra state=directory owner=michael group=michael
+  become: true
+- name: check out infrastructure repo to present in /srv/infra
+  git:
+    repo: git@github.com:michaelmcandrew/infra.git
+    dest: /srv/infra
+    update: no
+- name: add access to ec2 via bastion to .ssh/config
+  blockinfile:
+    dest: ~/.ssh/config
+    marker: "# {mark} BASTION HOST FOR AWS"
+    insertafter: "<body>"
+    block: |
+      Host bastion.thirdsectordesign.org
+        ForwardAgent yes
+        IdentityFile ~/.ssh/ansible-eu-central-1.pem
+        User ubuntu
+      Host *.3sd.ec2
+        ProxyCommand ssh ubuntu@bastion.thirdsectordesign.org -W %h:%p
+        IdentityFile ~/.ssh/ansible-eu-central-1.pem
+        User ubuntu

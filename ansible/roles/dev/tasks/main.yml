@@ -1,0 +1,102 @@
+---
+- name: register ppas
+  apt_repository:
+    repo: "{{ item }}"
+  become: true
+  tags: ppa
+  with_items:
+  - ppa:ondrej/php
+  - ppa:webupd8team/atom
+- name: install php packages
+  apt:
+    name:
+      - php-gettext
+      - php-xdebug
+      - phpmyadmin
+      - php5.6-common
+      - php5.6-curl
+      - php5.6-fpm
+      - php5.6-gd
+      - php5.6-mbstring
+      - php5.6-mcrypt
+      - php5.6-mysql
+      - php5.6-bcmath
+      - php5.6-imap
+      - php5.6-intl
+      - php5.6-zip
+      - php5.6-opcache
+      - php5.6-xml
+      - phpmyadmin
+    state: latest
+    update_cache: true
+    cache_valid_time: 21600 # six hours
+  become: true
+  tags: php-packages
+- include_vars: /srv/infra/ansible/vault/dev.yml
+  tags: x
+- name: passwordless login for phpmyadmin
+  template:
+    src: ../templates/phpmyadmin.conf.php
+    dest: /etc/phpmyadmin/conf.d/phpmyadmin.conf.php
+  become: true
+- name: display php errors
+  lineinfile:
+    dest: "{{ item }}"
+    regexp: ^display_errors
+    line: display_errors=on
+  with_items:
+    - /etc/php/5.6/fpm/php.ini
+    - /etc/php/5.6/cli/php.ini
+  tags: php-config
+  become: true
+- name: install packages
+  apt:
+    name:
+      - nginx
+      - apg
+    state: latest
+    update_cache: true
+    cache_valid_time: 21600 # six hours
+  become: true
+- name: ensure services are running and enabled on boot
+  become: true
+  service:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  with_items:
+  - nginx
+  - mysql
+- name: set up .bashrc.d directory
+  file: path=~/.bashrc.d state=directory
+- name: set .bashrc to source *.bashfiles ~/.bashrc.d/*.bash
+  blockinfile:
+    dest: ~/.bashrc
+    block: |
+      for config in ~/.bashrc.d/*.bash ; do
+        source "$config"
+      done
+      unset -v config
+- name: copy bash config files to ~/.bashrc.d
+  copy: src={{ item }} dest=~/.bashrc.d/
+  with_fileglob:
+    - files/bash/*.bash
+- name: put AWS credentials in ~/.bashrc.d/ directory
+  copy: src=/srv/infra/ansible/vault/aws-credentials.bash dest=~/.bashrc.d/
+- name: remove history size declarations from .basrc
+  lineinfile:
+    dest: ~/.bashrc
+    regexp: "{{ item }}"
+    state: absent
+  with_items:
+  - ^HISTSIZE
+  - ^HISTFILESIZE
+- name: put AWS credentials in ~/.bashrc.d/ directory
+  copy: src=/srv/infra/ansible/vault/aws-credentials.bash dest=~/.bashrc.d/
+- name: get latest civicrm-buildkit
+  git:
+    repo: git@github.com:civicrm/civicrm-buildkit.git
+    dest: ~/src/civicrm-buildkit
+    update: yes
+  notify:
+    - update buildkit tools

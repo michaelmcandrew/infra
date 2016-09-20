@@ -1,0 +1,4 @@
+- name: update buildkit tools
+  shell: ./bin/civi-download-tools
+  args:
+    chdir: ~/src/civicrm-buildkit
