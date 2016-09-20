@@ -1,0 +1,16 @@
+---
+- name: configure legacy prod server
+  hosts: legacy_prod_server
+  vars:
+    backup_mysql: true
+    backup_paths:
+    - source: /etc
+    - source: /var
+    - source: /srv
+      excludes:
+      - backup
+    - source: /home/*
+    - source: /root
+    - source: /usr/local
+  roles:
+  - backed_up
