@@ -1,0 +1,21 @@
+---
+- name: provision bastion host
+  hosts: localhost
+  gather_facts: False
+  connection: local
+  tasks:
+  - include: ec2-provision-instance.yml
+    vars:
+      instance_type: t2.nano
+      access: public
+      host: bastion
+      az: a
+      private_ip: 10.0.33.0
+      security_groups:
+      - bastion
+      role: bastion
+- name: configure bastion
+  hosts: tag_role_bastion
+  roles:
+  - { role: common, hostname: bastion }
+  - bastion
