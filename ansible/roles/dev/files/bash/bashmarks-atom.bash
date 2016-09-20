@@ -6,7 +6,7 @@ function a {
     if [ -z "$1" ]; then
       atom -a
     elif [ -f "$1" ]; then
-        atom -a "$target"
+        atom -a "$1"
     elif [ -d "$target" ]; then
         atom -a "$target"
     elif [ ! -n "$target" ]; then

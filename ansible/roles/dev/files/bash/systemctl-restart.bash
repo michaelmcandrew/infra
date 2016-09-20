@@ -1,6 +1,17 @@
 # Atom integration with bashmarks (inspired by bashmarks!)
 
 function sr {
-    echo Executing \'systemctl restart $1.service\'
-    systemctl restart $1.service
+    if [ -z "$1" ]; then
+      cat <<EOF
+Usage: "sr [service]"
+Executes: "systemctl restart [service].service"
+EOF
+    else
+      if systemctl | grep -q $1.service; then
+        echo Restarting $1...
+        systemctl restart $1.service
+      else
+        echo $1.service not found
+      fi
+    fi
 }
