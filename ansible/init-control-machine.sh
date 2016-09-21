@@ -21,6 +21,6 @@ sudo pip install git+https://github.com/ansible/ansible
 sudo mkdir $INFRA_PATH
 sudo chown $USER:$USER $INFRA_PATH
 git clone git://github.com/michaelmcandrew/infra.git $INFRA_PATH
-sudo rm -r $INFRA_PATH
+sudo rm -r $ANSIBLE_CONFIG
 sudo ln -s $INFRA_PATH/ansible $ANSIBLE_CONFIG
 echo "Complete. See /srv/infra/docs/install.md for next steps."
