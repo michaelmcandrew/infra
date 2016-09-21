@@ -23,4 +23,4 @@ sudo chown $USER:$USER $INFRA_PATH
 git clone git://github.com/michaelmcandrew/infra.git $INFRA_PATH
 sudo rm -r $INFRA_PATH
 sudo ln -s $INFRA_PATH/ansible $ANSIBLE_CONFIG
-echo "Complete. See /srv/infra/docs/initialise.md for next steps."
+echo "Complete. See /srv/infra/docs/install.md for next steps."
