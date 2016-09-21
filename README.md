@@ -4,4 +4,4 @@ This repository holds code to automate Third Sector Design's server infrastructu
 
 ## Installation
 
-See [installation.md](docs/installation.md).
+See [installation.md](docs/install.md).
