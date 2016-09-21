@@ -1,16 +1,18 @@
 Care is taken to distribute backup tasks throughout the day and throughout each hour so as not to overload the server at any one time.
 
-# Disaster recovery backups
+# Local backups
 
-All disaster recovery backups are carried out locally, then rsynced to the master backup server (the rsync process is run on the machine to be backed up)
+In the first instance, all machines carry out a local backup. That is, they use mysqldump and rsync to make a copy of all important data locally.
 
-* Every four hours (`0 0,4,8,12,16,20 * * *`)  each server creates a local snapshot
-* Every four hours + 20 minutes (`20 0,4,8,12,16,20 * * *`) the backup server rsyncs content from the backed up hosts
-* Every four hours + 40 minutes (`40 0,4,8,12,16,20 * * *`) all data on master backup is rsynced to two slave backup servers (in seperate physical locations)
+These backups are carried out every four hours on each machine.
+
+# Master backups
+
+At 20 minutes past the hour, the backup master pulls backups from each machine. For this reason, each machine needs backup-master's public key, and should allow ssh connections from backup master's private IP.
 
 # Point in time backups
 
-All point in time backups are carried out on the master backup server at srv/backup/pit and are propogated to the slave backup servers
+The master backup machine also creates point in time backups of its master backup. These are carried out on the following schedule.
 
 * Every four hours (`0 0,4,8,12,16,20 * * *`) a point in time backup is made and kept for 2 days (12 in total)
 * Daily at 2am (`0 2 * * *`) a point in time backup is made and kept for 2 weeks (14 in total)
@@ -18,4 +20,6 @@ All point in time backups are carried out on the master backup server at srv/bac
 * 1st of the month at 10am (`0 10 1 * *`) a point in time backup is made and kept for  24 months
 * 1st day of the year at 2pm (`0 14 1 1 *`) a point in time backup is made and kept for 50 years
 
-We only guaruntee to keep point in time backups for current clients, though in practice, we are unlikely to delete backed up data unless specifically requested or obliged to do so.
+# Slave backups
+
+At 40 minutes past the hour, the master backup machine pushes all of its backups (including the point in time backups) to the slave backup machines.
