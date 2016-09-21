@@ -2,4 +2,10 @@
 
 This repository holds code to automate Third Sector Design's server infrastructure.
 
-See [docs](docs) for usage instructions and [docs/install.md](docs/install.md) to get a controller set up on your machine.
+## Usage
+
+The [documentation](docs) contains an explanation of the architecture and notes on usage.
+
+## Installation
+
+These [installation instructions](docs/install.md) take you through setting up a control machine so you can start working with the infrastructure.
