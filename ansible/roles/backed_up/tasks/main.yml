@@ -1,8 +1,8 @@
 ---
-- name: snaphot backup directory exists
+- name: snapshot backup directory
   file: path={{ backup_snap }} state=directory
   become: yes
-- name: snaphot backup directory for database dumps exists
+- name: snaphot backup directory for database dumps
   file: path={{ backup_snap }}/dbs state=directory
   become: yes
   when: backup_mysql
@@ -32,25 +32,19 @@
     hour: 0,4,8,12,16,20
     job: "/usr/local/bin/backup_snap"
   become: true
-- name: get public key from backup master
-  local_action: command rsync --rsync-path "sudo rsync" backup-master.{{ private_domain }}:/root/.ssh/id_rsa.pub /tmp/backup-master-public-key.pub
+- name: check if the backup-master root public key exists on the control machine
+  delegate_to: localhost
+  stat: path=/srv/infra/ansible/vault/public_keys/backup-master.root.pub
+  register: backup_master_root_pub
 - name: add backup-master public key to this machine
-  authorized_key: user=backup key="{{ lookup('file', '/tmp/backup-master-public-key.pub') }}"
+  authorized_key: user=remote_backup key="{{ lookup('file', '/srv/infra/ansible/vault/public_keys/backup-master.root.pub') }}"
   become: true
-- name: remove local copy of public key
-  local_action: file path=/tmp/backup-master-public-key.pub state=absent
-- name: get ssh key for the backed up machine
-  fetch:
-    src: /etc/ssh/ssh_host_ecdsa_key.pub
-    dest: /tmp/backed-up-server-ecdsa-key.pub
-    flat: true
-- name: copy the server's public key to known hosts)
-  local_action: raw echo {{ ssh_host|default(ansible_fqdn) }} `cat /tmp/backed-up-server-ecdsa-key.pub` | ssh backup-master.{{ private_domain }} "cat > /tmp/backed-up-host;sudo ssh-keygen -F {{ ansible_fqdn }} || echo 'cat /tmp/backed-up-host >> /root/.ssh/known_hosts' | sudo bash; rm /tmp/backed-up-host"
-- name: remove the local copy of the server's public key 
-  local_action: file path=/tmp/backed-up-server-ecdsa-key.pub state=absent
-- debug: var=via_ssh_tunnel
-- name: create autossh.service for systemd
-  template: src=../templates/autossh.service.j2 dest=/etc/systemd/system/autossh.service
-  when: via_ssh_tunnel
-  tags: ssh_tunnel
+  when: backup_master_root_pub.stat.exists == true
+- debug:
+    msg: "WARNING: backup-master.root.pub was not found in vault/public_keys. This machine will not be backed up!"
   become: true
+  when: backup_master_root_pub.stat.exists == false
+- name: configure ssh tunnel
+  include: ssh-tunnel.yml
+  when: via_ssh_tunnel is defined and via_ssh_tunnel is defined == true
+  tag: ssh-tunnel

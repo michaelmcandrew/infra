@@ -1,4 +1,4 @@
 {% for item in backup_paths %}
-rsync -aR --delete {{ item.source }} {{ backup_snap }}files/{% if item.excludes is defined %}{% for exclude in item.excludes%} --exclude={{ exclude }}{% endfor %}{% endif %}
+rsync -archive --relative --delete {{ item.source }} {{ backup_snap }}files/{% if item.excludes is defined %}{% for exclude in item.excludes%} --exclude={{ exclude }}{% endfor %}{% endif %}
 
 {% endfor %}

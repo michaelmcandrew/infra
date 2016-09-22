@@ -1,0 +1,26 @@
+- name: install autossh systemd service
+  apt:
+    name: autossh
+  become: true
+- name: create autossh service for systemd
+  template:
+    src: autossh.service.j2
+    dest: /etc/systemd/system/autossh.service
+  become: true
+- name: add access to ec2 via bastion to .ssh/config
+  blockinfile:
+    dest: /home/remote_backup/.ssh/config
+    marker: "# {mark} BASTION HOST FOR AWS"
+    create: true
+    block: |
+      Host bastion.thirdsectordesign.org
+        ForwardAgent yes
+      Host backup-master.3sd.ec2
+        ProxyCommand ssh bastion.thirdsectordesign.org -W %h:%p
+  become: true
+- name: ensure that the systemd service is started
+  systemd:
+    state: started
+    name: autossh
+    daemon_reload: true
+  become: true

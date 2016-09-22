@@ -1,11 +1,11 @@
 [Unit]
-Description=Keeps a tunnel to 'backup-master.{{ private_domain }}' open
+Description=ssh tunnel to backup master
 After=network-online.target
 
 [Service]
 Type=simple
-User={{ ssh_user }}
-ExecStart=/usr/bin/autossh -N -q -R {{ ssh_port }}:backup-master.{{ private_domain }}:22 -o "ServerAliveInterval 60" -o "ServerAliveCountMax 3"
+User=remote_backup
+ExecStart=/usr/bin/autossh -N -R 30121:localhost:22 backup-master.3sd.ec2 
 
 [Install]
 WantedBy=multi-user.target
