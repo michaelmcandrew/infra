@@ -26,7 +26,7 @@
       #   cidr: 10.0.160.0/20 #10.0.[160-175].*
       #   az: "{{ region}}c"
   register: vpc
-  
+
 - name: create public hosted DNS zone
   route53_zone:
     zone: "{{ public_domain }}"
@@ -43,7 +43,7 @@
     filters:
       "tag:Name": a-public
   register: subnet
-  
+
 - name: Create NAT gateway
   ec2_vpc_nat_gateway:
     state: present
@@ -80,7 +80,7 @@
     routes:
     - dest: 0.0.0.0/0
       gateway_id: "{{ nat_gateway.nat_gateway_id }}"
-# 
+
 - name: configure bastion security group
   ec2_group:
     region: "{{ region }}"
@@ -92,3 +92,15 @@
         from_port: 22
         to_port: 22
         cidr_ip: "{{ home_public_ip }}/32"
+
+- name: configure backup security group
+  ec2_group:
+    region: "{{ region }}"
+    vpc_id: "{{ vpc.vpc_id }}"
+    name: backup
+    description: no one should be able to access the backup server apart from the bastion
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: "{{ prips.bastion }}/32"
