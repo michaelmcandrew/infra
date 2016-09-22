@@ -1,6 +1,6 @@
 # TODO
 
-* complete backup infrastructure
+* get slave backup servers up and running
 * monitoring
 * Write a playbook that updates this repository ansible by downloading the latest ec2 scripts from the appropriate URL
 * ensure that sensible ufw rules are in my own ansible (to allow backup, for example)
