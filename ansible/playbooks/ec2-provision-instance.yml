@@ -10,8 +10,13 @@
   copy: content="{{ ec2_key.key.private_key }}" dest="~/aws-ansible-{{ region }}.pem" mode=0600
   when: ec2_key.changed
 - name: look up latest compatible instance
-  shell: curl -s https://cloud-images.ubuntu.com/query/xenial/server/released.current.txt | awk -F '\t' '/ebs-ssd/ && /hvm/ && /{{ region }}/ {print $8}'
-  register: ami 
+  get_url:
+    url: https://cloud-images.ubuntu.com/query/trusty/server/released.current.txt
+    dest: /srv/infra/ansible/cache/ec2-images
+    force: yes
+- shell: awk -F '\t' '/ebs-ssd/ && /hvm/ && /{{ region }}/ {print $8}' /srv/infra/ansible/cache/ec2-images
+  changed_when: 0
+  register: ami
 - name: get vpc subnet facts
   ec2_vpc_subnet_facts:
     filters:
@@ -71,8 +76,9 @@
 - include: ec2-configure-ssh.yml
   with_items: "{{ ec2.instances|default({}) }}" # I think we need a default here, else it will complain
   when: ec2.changed
-  
-- name: install python 2 (later versions of ubuntu ship with python 3)
-  shell: ssh {{ host }}.{{ private_domain }} sudo apt -y install python
+
+# Test to see if python2 is installed
+# - name: install python 2 (later versions of ubuntu ship with python 3)
+#   shell: ssh {{ host }}.{{ private_domain }} sudo apt -y install python
 
 - meta: refresh_inventory

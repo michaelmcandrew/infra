@@ -1,2 +1,3 @@
 ansible/**/*.retry
+ansible/cache
 ansible/vault
