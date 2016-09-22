@@ -16,8 +16,8 @@ fi
 echo
 sudo apt update
 sudo apt install git python-dev python-pip -y
-sudo pip install markupsafe # workaround for https://github.com/ansible/ansible/issues/13570
-sudo pip install git+https://github.com/ansible/ansible
+sudo pip -H install markupsafe # workaround for https://github.com/ansible/ansible/issues/13570
+sudo pip -H install git+https://github.com/ansible/ansible
 sudo mkdir $INFRA_PATH
 sudo chown $USER:$USER $INFRA_PATH
 git clone git://github.com/michaelmcandrew/infra.git $INFRA_PATH
