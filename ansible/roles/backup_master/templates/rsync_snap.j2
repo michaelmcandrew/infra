@@ -1,3 +1,3 @@
 {% for item in backed_up_hosts %}
-rsync -a --delete --rsync-path "sudo rsync" {% if item.port is defined %}-e "ssh -p {{ item.port }}" {% endif %}{{ item.user|default('ubuntu') }}@{{ item.host }}:/srv/backup/snap/ /srv/backup/hosts/{{ item.name }}
+rsync --archive --delete --rsync-path "sudo rsync" {% if item.port is defined %}-e "ssh -p {{ item.port }}" {% endif %}remote_backup@{{ item.host }}:/srv/backup/snap/ /srv/backup/snap/hosts/{{ item.name }}
 {% endfor %}

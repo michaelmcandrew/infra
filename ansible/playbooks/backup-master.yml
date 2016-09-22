@@ -8,10 +8,12 @@
     vars:
       role: backup_master
       host: backup-master
-      private_ip: 10.0.5.1
+      private_ip: "{{ prips.backup_master }}"
+      instance_type: t2.nano
       access: private
       az: a
-      instance_type: t2.nano
+      security_groups:
+      - backup
       volumes:
       - device_name: /dev/sda1
         volume_size: 8
@@ -19,12 +21,9 @@
       - device_name: /dev/sdf
         volume_size: 500
         volume_type: sc1
-      security_groups:
-      - default
-    tags: ec2
-      
 - name: configure master backup server
   hosts: tag_role_backup_master
   roles:
-  - { role: common, hostname: backup-master }
+  - { role: common, host: backup-master }
+  - { role: user, users: [ { name: remote_backup, sudo: true, system: true }, {name: root } ] }
   - backup_master

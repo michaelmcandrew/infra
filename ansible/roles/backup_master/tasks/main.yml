@@ -1,4 +1,24 @@
 ---
+- name: format /dev/xvdf as ext4
+  filesystem:
+    dev: /dev/xvdf
+    fstype: ext4
+  become: true
+# as of 22/9/16 I can't use http://docs.ansible.com/ansible/mount_module.html
+- name: add /srv/backup to /etc/fstab if necessary
+  lineinfile:
+    dest: /etc/fstab
+    regexp: /srv/backup
+    line: /dev/xvdf /srv/backup ext4 defaults 0 0
+  become: true
+- name: check to see if /srv/backup is mounted
+  shell: mount | grep /srv/backup
+  register: mount
+  ignore_errors: yes
+- name: mount drive if not mounted
+  command: mount -a
+  when: mount.rc != 0
+  become: true
 - name: create PIT backup root directory
   file: path=/srv/backup/pit state=directory
   become: true
@@ -9,9 +29,9 @@
   template: src=../templates/backup_pit.j2 dest=/usr/local/bin/backup_pit_{{item.name}} mode=a+x
   become: true
   with_items: "{{backup_pits}}"
-- name: create cron jobs to run PIT backups
+- name: cron jobs for PIT backups
   cron:
-    name: "{{item.name}}"
+    name: "point in time {{item.name}}"
     cron_file: backup
     user: root
     minute: "{{item.cron.minute|default('*')}}"
@@ -22,15 +42,21 @@
     job: "/usr/local/bin/backup_pit_{{item.name}}"
   become: true
   with_items: "{{backup_pits}}"
-- name: include backed_up_hosts.yml
+- name: cron job for rsyncing snapshots
+  cron:
+    name: "collect snapshots from backed up machines"
+    cron_file: backup
+    user: root
+    minute: "20"
+    hour: "0,4,8,12,16,20"
+    day: "*"
+    weekday: "*"
+    month: "*"
+    job: "timeout 10800 /usr/local/bin/backup_rsync_snaps"
+  become: true
+- name: get list of backed up hosts
   include_vars:
     file: ../vars/backed_up_hosts.yml
 - name: rsync from each backed up host to the snapshot directory
-  template: src=../templates/rsync_snap.j2 dest=/usr/local/bin/backup_rsync_snaps mode=a+x
+  template: src=rsync_snap.j2 dest=/usr/local/bin/backup_rsync_snaps mode=a+x
   become: true
-- name: generate key for root
-  user:
-    name: root
-    generate_ssh_key: true
-  become: true
-    
