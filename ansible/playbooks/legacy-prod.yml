@@ -14,3 +14,9 @@
     - source: /usr/local
   roles:
   - backed_up
+  tasks:
+  - name: cache ssh server public key
+    fetch:
+      src: /etc/ssh/ssh_host_ecdsa_key.pub
+      dest: /srv/infra/ansible/vault/public_keys/prod.ssh.pub
+      flat: true

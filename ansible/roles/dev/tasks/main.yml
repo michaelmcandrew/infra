@@ -84,7 +84,7 @@
 - name: copy bash config files to ~/.bashrc.d
   copy: src={{ item }} dest=~/.bashrc.d/
   with_fileglob:
-    - files/bash/*.bash
+    - bash/*.bash
 - name: put AWS credentials in ~/.bashrc.d/ directory
   copy: src=/srv/infra/ansible/vault/aws-credentials.bash dest=~/.bashrc.d/
 - name: remove history size declarations from .basrc

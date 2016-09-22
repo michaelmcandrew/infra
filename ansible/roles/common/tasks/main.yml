@@ -1,2 +1,7 @@
-- hostname: name={{ hostname }}.{{ private_domain }}
+- hostname: name={{ host }}.{{ private_domain }}
   become: true
+- name: cache ssh server public key
+  fetch:
+    src: /etc/ssh/ssh_host_ecdsa_key.pub
+    dest: /srv/infra/ansible/vault/public_keys/{{ansible_hostname}}.ssh.pub
+    flat: true

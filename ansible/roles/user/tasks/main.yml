@@ -1,0 +1,24 @@
+---
+- name: create user
+  user:
+    name: "{{item.name}}"
+    system: "{{item.system|default(true)}}"
+    generate_ssh_key: "{{item.generate_ssh_key|default(true)}}"
+    shell: /bin/bash
+  with_items: "{{ users }}"
+  register: create_users_result
+  become: true
+- name: add user to sudoers
+  template:
+    src: sudoer.j2
+    dest: /etc/sudoers.d/{{item.name}}
+  with_items: "{{ users }}"
+  become: true
+  when: item.sudo|default(false)
+- name: cache public key locally
+  fetch:
+    src: "{{ item.ssh_key_file }}.pub"
+    dest: /srv/infra/ansible/vault/public_keys/{{ ansible_hostname}}.{{ item.name }}.pub
+    flat: true
+  with_items: "{{ create_users_result.results }}"
+  become: true
