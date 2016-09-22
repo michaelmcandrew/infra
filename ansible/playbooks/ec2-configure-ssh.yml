@@ -18,14 +18,20 @@
     name: "{{ item.public_ip }}"
     key: "{{ item.public_ip }} ecdsa-sha2-nistp256 {{ host_key.stdout }}"
   when: access == 'public'
-- name: add public domain name to known_hosts
+- name: add public domain name to known_hosts 
   known_hosts:
     name: "{{ host }}.{{ public_domain }}"
     key: "{{ host }}.{{ public_domain }} ecdsa-sha2-nistp256 {{ host_key.stdout }}"
   when: access == 'public'
-- name: wait for ssh
-  wait_for:
-    host: "{{ host }}.{{ private_domain }}"
-    port: 22
-    search_regex: OpenSSH
-  when: host is defined and host == 'bastion' # we can't do this for other hosts as wait_for is not aware that we'd need to use the bastion
+# - name: wait for ssh (public network)
+#   wait_for:
+#     host: "{{ host }}.{{ public_domain }}"
+#     port: 22
+#     search_regex: OpenSSH
+#   when: host == 'bastion'
+# - name: wait for ssh (private network)
+#   wait_for:
+#     host: "{{ host }}.{{ private_domain }}"
+#     port: 22
+#     search_regex: OpenSSH
+#   when: host != 'bastion'
