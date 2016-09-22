@@ -1,6 +1,6 @@
 # Third Sector Design Infrastructure
 
-This repository holds code to automate Third Sector Design's server infrastructure.
+This repository contains code that automates Third Sector Design's server infrastructure.
 
 ## Usage
 

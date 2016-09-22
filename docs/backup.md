@@ -8,7 +8,7 @@ These backups are carried out every four hours on each machine.
 
 # Master backups
 
-At 20 minutes past the hour, the backup master pulls backups from each machine. For this reason, each machine needs backup-master's public key, and should allow ssh connections from backup master's private IP.
+Every four hours, at 20 minutes past the hour, the backup master pulls backups from each backed up machine.
 
 # Point in time backups
 
