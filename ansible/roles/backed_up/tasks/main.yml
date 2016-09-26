@@ -18,7 +18,7 @@
     name: "backup_mysql"
     cron_file: backup
     user: root
-    minute: 40
+    minute: 0
     hour: 3,7,11,15,20,23
     job: "/usr/local/bin/backup_mysql"
   when: backup_mysql
@@ -28,8 +28,8 @@
     name: "backup_snap"
     cron_file: backup
     user: root
-    minute: 0
-    hour: 0,4,8,12,16,20
+    minute: 20
+    hour: 3,7,11,15,20,23
     job: "/usr/local/bin/backup_snap"
   become: true
 - name: check if the backup-master root public key exists on the control machine
