@@ -7,6 +7,7 @@
 * ensure permissions on the vault directory are locked down to 0700
 * sudo setfacl -Rm user:michael:rwX . -m default:user:michael:rwX .
 * two factor authentication for AWS
+* change reverse dns to randomly generated port and configure firewalls to allow this port (and no others)
 * implement secure https
   * disable ssl3 http://disablessl3.com/#nginx
   * https://easyengine.io/tutorials/nginx/diffie-hellman-logjam-attack-fix/
