@@ -8,14 +8,19 @@
     backup_paths:
     - source: /etc
     - source: /var
+      excludes:
+      - "lib/mysql"
     - source: /srv
       excludes:
       - backup
-    - source: /home/*
+    - source: /home
       excludes:
-      - ".thunderbird"
-      - ".cache"
-      - "Videos"
+      - "*/.thunderbird"
+      - "*/VirtualBox\\ VMs"
+      - "*/.cache"
+      - "*/Videos"
+      - "*/.local/share/Trash"
+      - "michael/Reference/disk-images"
     - source: /root
     - source: /usr/local
   roles:
