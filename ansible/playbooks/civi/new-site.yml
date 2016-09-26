@@ -108,9 +108,9 @@
       owner: "{{ ansible_user_id }}"
       group: "{{ ansible_user_id }}"
     become: true
-  - name: install civicrm
+  - name: install civicrm # For some reason buildkit's drush doesn't like the installer
     shell: |
-      drush civicrm-install \
+      /home/michael/.local/bin/drush civicrm-install \
       --include="{{ site_root }}" \
       --dbname={{ name }}_civicrm \
       --dbpass={{ mysql_password.stdout }} \
