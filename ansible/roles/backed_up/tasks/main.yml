@@ -6,7 +6,7 @@
   file: path={{ backup_snap }}/dbs state=directory
   become: yes
   when: backup_mysql
-- name: script to create mysql dumps in {{ backup_snap }}files
+- name: script to rysnc files to {{ backup_snap }}files
   template: src=../templates/backup_snap.j2 dest=/usr/local/bin/backup_snap mode=a+x
   become: true
 - name: script to create mysql dumps in {{ backup_snap }}dbs

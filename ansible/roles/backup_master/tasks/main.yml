@@ -5,6 +5,9 @@
     fstype: ext4
   become: true
 # as of 22/9/16 I can't use http://docs.ansible.com/ansible/mount_module.html
+- name: create backup root directory
+  file: path=/srv/backup state=directory
+  become: true
 - name: add /srv/backup to /etc/fstab if necessary
   lineinfile:
     dest: /etc/fstab
@@ -52,7 +55,7 @@
     day: "*"
     weekday: "*"
     month: "*"
-    job: "timeout 10800 /usr/local/bin/backup_rsync_snaps"
+    job: /usr/local/bin/backup_rsync_snaps
   become: true
 - name: get list of backed up hosts
   include_vars:
