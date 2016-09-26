@@ -20,7 +20,7 @@
         volume_type: gp2
       - device_name: /dev/sdf
         volume_size: 500
-        volume_type: sc1
+        volume_type: gp2
 - name: configure master backup server
   hosts: tag_role_backup_master
   roles:
