@@ -8,15 +8,24 @@
     - host: bastion.3sd.ec2
       user: remote_backup
       key: xps13.remote_backup
+
     hosts:
     - host: backup-master.3sd.ec2
       path: /root/.ssh/known_hosts
-      known_host: xps13
-      known_host_reversed: "[localhost]:30121"
+      known_host_key: xps13
+      known_host: "[localhost]:30121"
     - host: backup-master.3sd.ec2
       path: /root/.ssh/known_hosts
-      known_host: prod
-      known_host_reversed: "prod.thirdsectordesign.org"
+      known_host_key: prod
+      known_host: prod.thirdsectordesign.org
+    - host: michael_laptop
+      path: /home/remote_backup/.ssh/known_hosts
+      known_host_key: backup-master
+      known_host: backup-master.3sd.ec2
+    - host: michael_laptop
+      path: /home/remote_backup/.ssh/known_hosts
+      known_host: bastion.thirdsectordesign.org
+      known_host_key: bastion
 
   tasks:
   - authorized_key:
@@ -25,10 +34,11 @@
     delegate_to: "{{ item.host }}"
     with_items: "{{ keys }}"
     become: true
+
   - known_hosts:
       path: "{{ item.path }}"
-      name: "{% if item.known_host_reversed is defined %}{{ item.known_host_reversed }}{% else %}{{ item.known_host }}{% endif %}"
-      key:  "{% if item.known_host_reversed  is defined %}{{ item.known_host_reversed }}{% else %}{{ item.known_host }}{% endif %} {{ lookup('file', '/srv/infra/ansible/vault/public_keys/{{ item.known_host }}.ssh.pub') }}"
+      name: "{{ item.known_host }}"
+      key:  "{{ item.known_host }} {{ lookup('file', '/srv/infra/ansible/vault/public_keys/{{ item.known_host_key }}.ssh.pub') }}"
     delegate_to: "{{ item.host }}"
     with_items: "{{ hosts }}"
     become: true
