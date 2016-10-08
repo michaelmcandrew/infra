@@ -1,1 +1,5 @@
 ---
+- name: install packages
+  apt:
+    name:
+    - lynx-cur
