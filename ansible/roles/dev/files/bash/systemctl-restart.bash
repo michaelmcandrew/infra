@@ -9,7 +9,7 @@ EOF
     else
       if systemctl | grep -q $1.service; then
         echo Restarting $1...
-        systemctl restart $1.service
+        sudo systemctl restart $1.service
       else
         echo $1.service not found
       fi

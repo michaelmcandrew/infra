@@ -7,6 +7,8 @@ function a {
       atom -a
     elif [ -f "$1" ]; then
         atom -a "$1"
+    elif [ -d "$1" ]; then
+        atom -a "$1"
     elif [ -d "$target" ]; then
         atom -a "$target"
     elif [ ! -n "$target" ]; then

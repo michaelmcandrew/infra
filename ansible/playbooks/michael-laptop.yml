@@ -4,6 +4,7 @@
   connection: local
   vars:
     host: xps13
+    fq_host: xps13
     backup_mysql: true
     backup_paths:
     - source: /etc
@@ -28,3 +29,6 @@
   - { role: backed_up, via_ssh_tunnel: true, ssh_tunnel_port: 30121 }
   - ssh_tunnel
   - dev
+  tasks:
+  - hostname: name=xps13
+    become: yes
