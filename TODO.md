@@ -11,3 +11,6 @@
 * implement secure https
   * disable ssl3 http://disablessl3.com/#nginx
   * https://easyengine.io/tutorials/nginx/diffie-hellman-logjam-attack-fix/
+* Get letsencrypt working and automated for all sites that I host
+* might make sense to make hourly PIT backups for the last 6 hours on the local machine if it isn't to expensive in terms of power, etc.
+* add the palm detection improvements (~/src/palm-detection) and enale it as a start up script
