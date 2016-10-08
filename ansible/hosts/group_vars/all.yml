@@ -10,3 +10,4 @@ public_domain: thirdsectordesign.org
 prips:
   bastion: 10.0.32.10
   backup_master: 10.0.2.0
+  production: 10.0.33.0
