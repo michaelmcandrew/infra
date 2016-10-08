@@ -29,6 +29,7 @@ Note that AWS reserves the first 4 IP addresses and the last IP addresses in eac
 ## Assigned private IP addresses
 
 IP         | Host          | Role
----------- | ------------- | -------------
+---------- | ------------- | -----------------
 10.0.32.10 | bastion       | Bastion host
+10.0.33.0  | production    | Production server
 10.0.2.0   | backup-master | Backup master
