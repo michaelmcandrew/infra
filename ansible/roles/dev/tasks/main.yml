@@ -1,4 +1,4 @@
----
+---  # We should compare lemp/tasks/mail.yml with dev/tasks/mail.yml since there is a lot of overlap and we should rationalise
 - name: register ppas
   apt_repository:
     repo: "{{ item }}"
@@ -54,6 +54,16 @@
     - /etc/php/5.6/cli/php.ini
   tags: php-config
   become: true
+  notify: restart php5.6-fpm
+- name: configure php-fpm for civicrm
+  template:
+    src: etc-php-5.6-fpm.30-civicrm.ini
+    dest: "{{ item }}"
+  with_items:
+    - /etc/php/5.6/cli/conf.d/30-civicrm.ini
+    - /etc/php/5.6/fpm/conf.d/30-civicrm.ini
+  become: true
+  notify: restart php5.6-fpm
 - name: install packages
   apt:
     name:
