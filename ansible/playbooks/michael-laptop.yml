@@ -17,6 +17,7 @@
     - source: /home
       excludes:
       - "*/.thunderbird"
+      - "*/.gnupg"
       - "*/VirtualBox\\ VMs"
       - "*/.cache"
       - "*/Videos"
@@ -27,7 +28,6 @@
   roles:
   - controller
   - { role: backed_up, via_ssh_tunnel: true, ssh_tunnel_port: 30121 }
-  - ssh_tunnel
   - dev
   tasks:
   - hostname: name=xps13
