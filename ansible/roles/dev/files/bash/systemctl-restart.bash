@@ -1,5 +1,3 @@
-# Atom integration with bashmarks (inspired by bashmarks!)
-
 function sr {
     if [ -z "$1" ]; then
       cat <<EOF
