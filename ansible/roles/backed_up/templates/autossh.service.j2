@@ -1,11 +1,15 @@
 [Unit]
 Description=ssh tunnel to backup master
-After=network-online.target
+After=networking.target
 
 [Service]
 Type=simple
 User=remote_backup
-ExecStart=/usr/bin/autossh -N -R 30121:localhost:22 backup-master.3sd.ec2 
+ExecStart=/usr/bin/autossh -N -R 30121:localhost:22 backup-master.3sd.ec2
 
+# For some reason DNS doesn't seem to be up when networking is up (maybe DCHP?)
+# so we'll restart the service (if it exits successfully)
+Restart=always
+RestartSec=60
 [Install]
 WantedBy=multi-user.target

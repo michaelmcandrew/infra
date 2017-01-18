@@ -18,8 +18,9 @@
       Host backup-master.3sd.ec2
         ProxyCommand ssh bastion.thirdsectordesign.org -W %h:%p
   become: true
-- name: ensure that the systemd service is started
+- name: ensure that the systemd autossh service is started and enabled on boot
   systemd:
+    enabled: yes
     state: started
     name: autossh
     daemon_reload: true
