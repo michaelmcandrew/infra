@@ -2,6 +2,7 @@
 
 * get slave backup servers up and running
 * monitoring
+* elastic IP address provision. Currently instances need to be switched off to associate an EIP. We can probably also associate them at start up from the pool of EIPs that we are using
 * Write a playbook that updates this repository ansible by downloading the latest ec2 scripts from the appropriate URL
 * ensure that sensible ufw rules are in my own ansible (to allow backup, for example)
 * ensure permissions on the vault directory are locked down to 0700

@@ -5,10 +5,7 @@
       - acl
       - drush
       - git
-      - mysql-server
-      - mysql-client
       - nginx
-      - phpmyadmin
       - php-gettext
       - php-soap
       - php5-common
@@ -16,10 +13,8 @@
       - php5-fpm
       - php5-gd
       - php5-mcrypt
-      - php5-mysql
       - php5-imap
       - php5-intl
-      - python-mysqldb
     state: latest
     update_cache: true
     cache_valid_time: 21600 # six hours
@@ -32,7 +27,6 @@
     state: started
   with_items:
   - nginx
-  - mysql
   - php5-fpm
 - name: download composer
   script: install-composer.sh
@@ -85,21 +79,3 @@
 - name: ubuntu user can muck around in standard places
   shell: setfacl -m user:ubuntu:rwx /var/www /var/repos /etc/nginx/sites-enabled /etc/nginx/sites-available
   become: true
-- name: Check that .my.cnf exists
-  stat: path=~/.my.cnf
-  register: my_cnf
-- name: set mysql password
-  local_action: command apg -m 20 -M NCL -a 1 -n 1
-  register: password
-  when: not my_cnf.stat.exists
-- name: set root mysql password
-  mysql_user:
-    login_user: root
-    user: root
-    password: password.stdout
-  when: not my_cnf.stat.exists
-- name: create ~/.my.cnf file
-  template:
-    src: my.cnf
-    dest: ~/.my.cnf
-  when: not my_cnf.stat.exists

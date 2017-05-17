@@ -8,6 +8,7 @@
     vars:
       role: production
       host: production
+      codename: trusty
       private_ip: "{{ prips.production }}"
       instance_type: t2.small
       access: public
@@ -20,8 +21,19 @@
         volume_type: gp2
 - name: configure production server
   hosts: tag_role_production
+  vars:
+    backup_mysql: true
+    backup_paths:
+    - source: /etc
+    - source: /var
+    - source: /srv
+      excludes:
+      - backup
+    - source: /home/*
+    - source: /root
+    - source: /usr/local
   roles:
   - { role: common, host: production }
   - { role: user, users: [ { name: remote_backup, sudo: true, system: true }, {name: root } ] }
-  - lemp
+  - mysql
   - backed_up
