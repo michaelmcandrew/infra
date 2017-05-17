@@ -1,8 +1,8 @@
 ---
 - debug:
-    msg: "!!! INSTALL mysql-server PACKAGE MANUALLY !!! and ensure that"
+    msg: "!!! INSTALL mysql-server PACKAGE MANUALLY !!!"
 - debug:
-    msg: "!!!!! ensure that /root/.my.cnf exists !!!!! backups will not work without it"
+    msg: "!!!!! Ensure that /root/.my.cnf exists - MySQL backups will not work without it! !!!!!"
 # - name: install mysql packages
 #   apt:
 #     name:
