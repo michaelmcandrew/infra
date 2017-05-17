@@ -3,6 +3,8 @@
 backed_up_hosts:
 - name: legacy_prod_server
   host: prod.thirdsectordesign.org
+- name: p2
+  host: production2.thirdsectordesign.org
 - name: michael_laptop
   host: localhost
   port: 30121
