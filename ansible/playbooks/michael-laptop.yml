@@ -29,6 +29,7 @@
   - controller
   - { role: backed_up, via_ssh_tunnel: true, ssh_tunnel_port: 30121 }
   - dev
+  - node
   tasks:
   - hostname: name=xps13
     become: yes
