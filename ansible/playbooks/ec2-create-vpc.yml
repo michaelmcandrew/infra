@@ -41,7 +41,7 @@
   ec2_vpc_subnet_facts:
     region: "{{ region }}"
     filters:
-      "tag:Name": a-public
+      "tag:Name": "a-public"
   register: subnet
 
 - name: Create NAT gateway
@@ -124,3 +124,7 @@
         from_port: 22
         to_port: 22
         cidr_ip: "{{ prips.bastion }}/32"
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: "52.59.75.59/32" # Elastic IP of current backup server's NAT interface (need to keep access open until we move the backup server over to Ireland)
