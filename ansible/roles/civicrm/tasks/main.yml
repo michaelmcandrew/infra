@@ -1,0 +1,48 @@
+---
+- name: install civicrm packages
+  apt:
+    name:
+      - drush
+    state: latest
+    update_cache: true
+    cache_valid_time: 21600 # six hours
+  become: true
+- name: get latest scout
+  git:
+    repo: https://github.com/3sd/scout
+    dest: ~/src/scout
+    update: yes
+    accept_hostkey: yes
+- name: get latest cv
+  git:
+    repo: https://github.com/michaelmcandrew/cv
+    dest: ~/src/cv
+    update: yes
+    accept_hostkey: yes
+    version: pop
+- name: install cv
+  shell: composer install
+  args:
+    creates: ~/src/cv/vendor/autoload.php
+    chdir: ~/src/cv
+- name: create /var/repos
+  file:
+    name: /var/repos
+    state: directory
+  become: true
+- name: link scout to /usr/local/bin
+  file:
+    name: /usr/local/bin/scout
+    src: /home/ubuntu/src/scout/scout
+    state: link
+  become: true
+- name: link cv to /usr/local/bin
+  file:
+    name: /usr/local/bin/cv
+    src: /home/ubuntu/src/cv/bin/cv
+    state: link
+  become: true
+- name: create .scout directory
+  file:
+    name: ~/.scout
+    state: directory
