@@ -1,0 +1,44 @@
+---
+- debug:
+    msg: "!!! INSTALL mysql-server PACKAGE MANUALLY !!! and ensure that"
+- debug:
+    msg: "!!!!! ensure that /root/.my.cnf exists !!!!! backups will not work without it"
+# - name: install mysql packages
+#   apt:
+#     name:
+#       - mysql-server
+#       - mysql-client
+#       - mysql-common
+#       - python-mysqldb
+#       - php-mysql
+#     state: latest
+#     update_cache: true
+#     cache_valid_time: 21600 # six hours
+#   become: true
+# # - name: Check that .my.cnf exists
+# #   stat: path=~/.my.cnf
+# #   register: my_cnf
+# # - name: set mysql password
+# #   local_action: command apg -m 20 -M NCL -a 1 -n 1
+# #   register: password
+# #   when: not my_cnf.stat.exists
+# # - name: set root mysql password
+# #   mysql_user:
+# #     login_user: root
+# #     user: root
+# #     password: michael
+# #   when: not my_cnf.stat.exists
+# #   become: true
+# # - name: create ~/.my.cnf file
+# #   template:
+# #     src: my.cnf
+# #     dest: ~/.my.cnf
+# #   when: not my_cnf.stat.exists
+# - name: ensure services are running and enabled on boot
+#   become: true
+#   service:
+#     name: "{{ item }}"
+#     enabled: yes
+#     state: started
+#   with_items:
+#   - mysql

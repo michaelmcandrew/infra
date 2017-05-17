@@ -1,0 +1,19 @@
+---
+- name: install letsencrypt packages
+  apt:
+    name:
+      - letsencrypt
+    state: latest
+    update_cache: true
+    cache_valid_time: 21600 # six hours
+  become: true
+- name: cron to renew certificates
+  cron:
+    name: "letsencrypt_renew"
+    cron_file: letsencrypt
+    user: root
+    minute: 30
+    hour: 3
+    weekday: 0
+    job: "/usr/bin/letsencrypt renew"
+  become: true

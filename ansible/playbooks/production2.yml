@@ -1,0 +1,46 @@
+---
+- name: provision production server with Ubuntu 16.04
+  hosts: localhost
+  gather_facts: False
+  connection: local
+  tasks:
+  - include: ec2-provision-instance.yml
+    vars:
+      role: production2
+      host: production2
+      codename: xenial
+      private_ip: "{{ prips.production2 }}"
+      instance_type: t2.small
+      access: public
+      az: a
+      security_groups:
+      - production
+      volumes:
+      - device_name: /dev/sda1
+        volume_size: 20
+        volume_type: gp2
+- name: configure production server
+  vars:
+    backup_mysql: true
+    backup_paths:
+    - source: /etc
+    - source: /var
+    - source: /srv
+      excludes:
+      - backup
+    - source: /home/*
+    - source: /root
+    - source: /usr/local
+  hosts: tag_role_production2
+  roles:
+  - { role: common, host: production2 }
+  - { role: user, users: [ { name: remote_backup, sudo: true, system: true }, {name: root } ] }
+  - backed_up
+  - civicrm
+  - letsencrypt
+  - mysql
+  - nginx
+  - node
+  - php
+  - postfix
+  - redmine

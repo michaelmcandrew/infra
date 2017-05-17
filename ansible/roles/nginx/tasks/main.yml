@@ -1,0 +1,12 @@
+---
+- name: install nginx packages
+  apt:
+    name:
+      - nginx
+    state: latest
+    update_cache: true
+    cache_valid_time: 21600 # six hours
+  become: true
+- name: ubuntu user can muck around in standard places
+  shell: setfacl -m user:ubuntu:rwx /var/www /etc/nginx/sites-enabled /etc/nginx/sites-available
+  become: true

@@ -1,0 +1,85 @@
+---
+- name: install php packages
+  apt:
+    name:
+      - php-gettext
+      - php-soap
+      - php-common
+      - php-curl
+      - php-fpm
+      - php-gd
+      - php-mcrypt
+      - php-mysql
+      - php-imap
+      - php-intl
+      - php-zip
+    state: latest
+    update_cache: true
+    cache_valid_time: 21600 # six hours
+  become: true
+- name: ensure services are running and enabled on boot
+  become: true
+  service:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  with_items:
+  - php7.0-fpm
+- name: download composer
+  script: install-composer.sh
+  args:
+    creates: /usr/local/bin/composer
+- name: get latest scout
+  git:
+    repo: https://github.com/michaelmcandrew/scout
+    dest: ~/src/scout
+    update: yes
+    accept_hostkey: yes
+- name: get latest cv
+  git:
+    repo: https://github.com/michaelmcandrew/cv
+    dest: ~/src/cv
+    update: yes
+    accept_hostkey: yes
+    version: pop
+- name: install cv
+  shell: composer install
+  args:
+    creates: ~/src/cv/vendor/autoload.php
+    chdir: ~/src/cv
+- name: create /var/www
+  file:
+    name: /var/www
+    state: directory
+  become: true
+- name: create /var/repos
+  file:
+    name: /var/repos
+    state: directory
+  become: true
+- name: link scout to /usr/local/bin
+  file:
+    name: /usr/local/bin/scout
+    src: /home/ubuntu/src/scout/scout
+    state: link
+  become: true
+- name: link cv to /usr/local/bin
+  file:
+    name: /usr/local/bin/cv
+    src: /home/ubuntu/src/cv/bin/cv
+    state: link
+  become: true
+- name: create .scout directory
+  file:
+    name: ~/.scout
+    state: directory
+- name: ubuntu user can muck around in standard places
+  shell: setfacl -m user:ubuntu:rwx /var/www /var/repos /etc/nginx/sites-enabled /etc/nginx/sites-available
+  become: true
+- name: add php config for civicrm
+  copy:
+    src: civicrm.ini
+    dest: /etc/php/7.0/fpm/conf.d/civicrm.ini
+  become: true
+  notify:
+  - restart php7.0-fpm

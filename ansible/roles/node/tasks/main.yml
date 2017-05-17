@@ -1,0 +1,31 @@
+---
+- name: add nodesource apt-key
+  apt_key:
+    url: "https://deb.nodesource.com/gpgkey/nodesource.gpg.key"
+    state: present
+  become: true
+- name: add nodesource deb repo
+  apt_repository:
+    repo: deb https://deb.nodesource.com/node_7.x xenial main
+    state: present
+  become: true
+- name: add nodesource deb-src repo
+  apt_repository:
+    repo: deb-src https://deb.nodesource.com/node_7.x xenial main
+    state: present
+  become: true
+- name: install node packages
+  apt:
+    name: nodejs
+    state: latest
+    update_cache: true
+    cache_valid_time: 21600 # six hours
+  become: true
+- name: install global node packages
+  npm:
+    name: "{{ item }}"
+    global: yes
+  with_items:
+    - pm2
+    - "@angular/cli"
+  become: true
