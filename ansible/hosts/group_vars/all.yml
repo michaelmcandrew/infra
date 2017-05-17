@@ -1,7 +1,7 @@
 ---
 backup_pit: /srv/backup/pit/
 backup_snap: /srv/backup/snap/
-region: eu-central-1
+region: eu-west-1
 availability_zone: a
 home_public_ip: 217.155.40.243
 private_domain: 3sd.ec2
@@ -11,3 +11,4 @@ prips:
   bastion: 10.0.32.10
   backup_master: 10.0.2.0
   production: 10.0.33.0
+  production2: 10.0.33.1

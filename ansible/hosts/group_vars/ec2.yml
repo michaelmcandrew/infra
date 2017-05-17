@@ -1,3 +1,3 @@
 ---
 ansible_user: ubuntu
-ansible_ssh_common_args: "-o 'ProxyCommand ssh -W %h:%p ubuntu@bastion.thirdsectordesign.org -i ~/.ssh/ansible-eu-central-1.pem'"
+ansible_ssh_common_args: "-o 'ProxyCommand ssh -W %h:%p ubuntu@bastion.thirdsectordesign.org -i ~/.ssh/ansible-eu-west-1.pem'"
