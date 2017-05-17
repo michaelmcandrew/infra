@@ -10,6 +10,7 @@
       host: bastion
       private_ip: "{{ prips.bastion }}"
       instance_type: t2.nano
+      codename: trusty
       access: public
       az: a
       security_groups:

@@ -11,7 +11,7 @@
   when: ec2_key.changed
 - name: look up latest compatible instance
   get_url:
-    url: https://cloud-images.ubuntu.com/query/trusty/server/released.current.txt
+    url: https://cloud-images.ubuntu.com/query/{{ codename }}/server/released.current.txt
     dest: /srv/infra/ansible/cache/ec2-images
     force: yes
 - shell: awk -F '\t' '/ebs-ssd/ && /hvm/ && /{{ region }}/ {print $8}' /srv/infra/ansible/cache/ec2-images
@@ -33,11 +33,12 @@
     groups: "{{ security_groups }}"
     wait: yes
     instance_tags:
-      role: "{{ role }}"
+      role: "{{ role }}" # What does this do?
       ansible: "yes"
     private_ip: "{{ private_ip }}"
     vpc_subnet_id: "{{ vpc_subnet.subnets.0.id }}"
     assign_public_ip: "{% if access == 'public' %}yes{% else %}no{% endif %}"
+    termination_protection: yes
   register: ec2
   failed_when: "ec2.failed is defined and ec2.failed == True and 'InvalidIPAddress.InUse' not in ec2.msg"
 - name: find instance
@@ -77,8 +78,8 @@
   with_items: "{{ ec2.instances|default({}) }}" # I think we need a default here, else it will complain
   when: ec2.changed
 
-# Test to see if python2 is installed
-# - name: install python 2 (later versions of ubuntu ship with python 3)
-#   shell: ssh {{ host }}.{{ private_domain }} sudo apt -y install python
+- name: install python 2 on xenial
+  shell: ssh {{ host }}.{{ private_domain }} sudo apt -y install python
+  when: codename == 'xenial'
 
 - meta: refresh_inventory
