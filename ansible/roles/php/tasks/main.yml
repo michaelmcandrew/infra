@@ -29,12 +29,6 @@
   script: install-composer.sh
   args:
     creates: /usr/local/bin/composer
-- name: get latest scout
-  git:
-    repo: https://github.com/michaelmcandrew/scout
-    dest: ~/src/scout
-    update: yes
-    accept_hostkey: yes
 - name: get latest cv
   git:
     repo: https://github.com/michaelmcandrew/cv
@@ -56,12 +50,6 @@
   file:
     name: /var/repos
     state: directory
-  become: true
-- name: link scout to /usr/local/bin
-  file:
-    name: /usr/local/bin/scout
-    src: /home/ubuntu/src/scout/scout
-    state: link
   become: true
 - name: link cv to /usr/local/bin
   file:
