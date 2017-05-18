@@ -27,7 +27,9 @@
     - source: /usr/local
   roles:
   - controller
-  - { role: backed_up, via_ssh_tunnel: true, ssh_tunnel_port: 30121 }
+  # For now, don't do anything with regard to setting up backups (for now, since
+  # it is a bit fragile)
+  # - { role: backed_up, via_ssh_tunnel: true, ssh_tunnel_port: 30121 }
   - dev
   - node
   tasks:
