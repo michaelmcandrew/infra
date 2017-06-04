@@ -1,2 +1,1 @@
-PATH="$HOME/src/scout:$HOME/src/cv/bin:$HOME/src/civicrm-buildkit/bin:$PATH"
-  
+PATH="$PATH:$HOME/src/scout:$HOME/src/cv/bin:$HOME/src/civicrm-buildkit/bin"
